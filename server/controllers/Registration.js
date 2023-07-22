@@ -1,6 +1,8 @@
 const Register = require("../models/Registeration");
+const mailSender = require("../utils/mailSender");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+// signup conrollers
 exports.Register = async (req, res) => {
   try {
     // get values from body
@@ -23,7 +25,6 @@ exports.Register = async (req, res) => {
     // hashed password
     hashedPassword = await bcrypt.hash(password, 10);
     const images = `https://api.dicebear.com/6.x/initials/svg?seed=${userName}`;
-    console.log(images);
     // create and update in database
     const user = await Register.create({
       userName,
@@ -31,6 +32,12 @@ exports.Register = async (req, res) => {
       password: hashedPassword,
       profileImage: images,
     });
+    // send email
+    await mailSender(
+      email,
+      "Account Created Successfully",
+      `Hi ${userName} you hav successfully created your account on chat`
+    );
     // send response
     res.status(200).json({
       success: true,
@@ -69,11 +76,19 @@ exports.Login = async (req, res) => {
         email: existingUser.email,
         id: existingUser._id,
       };
-      const token = await jwt.sign(payload, process.env.JWT_SECRET, {
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
-      return res.status(200).json({
+      existingUser.token = token;
+      existingUser.password = undefined;
+      const options = {
+        expires: new Date(Date.now() + 2 * 24 * 60 * 60 + 1000),
+        httpOnly: true,
+      };
+      return res.cookie("token", token, options).status(200).json({
         success: true,
+        token,
+        existingUser,
         message: "Successfully logged in ",
       });
     } else {
@@ -86,6 +101,28 @@ exports.Login = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "User can't be signned in  ",
+      error: err.message,
+    });
+  }
+};
+
+// Logout controllers
+exports.Logout = async (req, res) => {
+  try {
+    // Clear the token on the client-side by setting an expired cookie
+    const options = {
+      expires: new Date(Date.now() - 1),
+      httpOnly: true,
+    };
+    res.cookie("token", "", options);
+    return res.status(200).json({
+      success: true,
+      message: "Successfully logged out",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred during logout",
       error: err.message,
     });
   }
