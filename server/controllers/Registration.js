@@ -1,7 +1,17 @@
 const Register = require("../models/Registeration");
+const Otp = require("../models/Otp");
 const mailSender = require("../utils/mailSender");
 const bcrypt = require("bcrypt");
+const OtpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
+
+// otpSender
+exports.sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+  } catch (err) {}
+};
+
 // signup conrollers
 exports.Register = async (req, res) => {
   try {
