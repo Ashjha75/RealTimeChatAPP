@@ -1,5 +1,6 @@
 import Register from "./components/Register";
 import Login from "./components/Login";
+import ForgotPass from "./components/ForgotPass";
 import "./App.css";
 import axios from "axios";
 import reacSvg from "./assets/react.svg";
@@ -17,8 +18,9 @@ function App() {
   return (
     <>
       <img src={reacSvg} alt="" onClick={LogoutHandler} />
-      <Register />
-      <Login />
+      {/* <Register />
+      <Login /> */}
+      <ForgotPass />
     </>
   );
 }
