@@ -1,0 +1,23 @@
+.reverse-spin {
+  animation: spin 0.56s linear infinite;
+}
+@keyframes spin {
+  from {
+    transform: rotate(180deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.send-mail {
+  animation: send 1.9s linear infinite;
+}
+@keyframes send {
+  from {
+    transform: translateX(-12px) rotate(6deg);
+  }
+  to {
+    transform: translateX(35px) rotate(6deg);
+  }
+}

@@ -1,12 +1,20 @@
 import React, { useState } from "react";
+import { BsFillEyeSlashFill, BsFillEyeFill } from "react-icons/bs";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import SuccessMessage from "../../Utils/SuccessMessage";
+import ErrorMessage from "../../Utils/ErrorMessage";
 import Loader from "../../Utils/Loader";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
 const Register = () => {
-  const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
+  const [message, setMessage] = useState({
+    successMessage: "",
+    errorMessage: "",
+  });
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loader, setLoader] = useState(false);
   const Schema = yup.object().shape({
     userName: yup
@@ -40,16 +48,28 @@ const Register = () => {
         password: data.password,
         email: data.email,
       });
-      setSuccessMessage(res.data.message);
+      setMessage({
+        successMessage: res.data.message,
+        errorMessage: "",
+      });
       reset();
+      navigate("/login", {
+        state: { successMessage: "User created successfully, Please login." },
+      });
     } catch (err) {
-      console.log(err.message);
+      setMessage({
+        successMessage: "",
+        errorMessage: err.response.data.message,
+      });
     } finally {
       setLoader(false);
     }
   };
-  const handleCloseSuccessMessage = () => {
-    setSuccessMessage("");
+  const handleCloseMessage = () => {
+    setMessage({
+      successMessage: "",
+      errorMessage: "",
+    });
   };
   return (
     <>
@@ -66,7 +86,6 @@ const Register = () => {
               <input
                 type="text"
                 placeholder="userName"
-                autoComplete="off"
                 {...register("userName")}
                 className={`block w-full rounded-md p-3 mt-3 border outline-none focus:ring-2 ${
                   errors.userName
@@ -74,13 +93,12 @@ const Register = () => {
                     : "focus:ring-violet-200"
                 }`}
               />
-              <div className="text-red-500 text-sm ">
+              <div className="text-red-500 text-xs">
                 {errors.userName?.message}
               </div>
               <input
                 type="text"
                 placeholder="email"
-                autoComplete="off"
                 {...register("email")}
                 className={`block w-full rounded-md p-3 mt-3 border outline-none focus:ring-2 ${
                   errors.userName
@@ -88,20 +106,35 @@ const Register = () => {
                     : "focus:ring-violet-200"
                 }`}
               />
-              <div className="text-red-500 text-sm ">
+              <div className="text-red-500 text-xs ">
                 {errors.email?.message}
               </div>
-              <input
-                type="password"
-                placeholder="password"
-                {...register("password")}
-                className={`block w-full rounded-md p-3 mt-3 border outline-none focus:ring-2 ${
+              <div
+                className={`group flex focus:ring-2 border outline-none  w-full rounded-md  mt-3 ${
                   errors.userName
-                    ? "focus:ring-red-400"
-                    : "focus:ring-violet-200"
+                    ? "focus-within:ring-2 ring-red-400"
+                    : "focus-within:ring-2 ring-violet-200"
                 }`}
-              />
-              <div className="text-red-500 text-sm ">
+              >
+                <input
+                  type={isPasswordVisible ? "text" : "password"}
+                  placeholder="password"
+                  {...register("password")}
+                  className={`w-[92%] h-[90%] p-3 rounded-l-md  border-none outline-none `}
+                />
+                {isPasswordVisible ? (
+                  <BsFillEyeSlashFill
+                    className="text-blue-500 text-xl cursor-pointer h-auto"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                  />
+                ) : (
+                  <BsFillEyeFill
+                    className="text-blue-500 text-xl cursor-pointer h-auto"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                  />
+                )}
+              </div>
+              <div className="text-red-500 text-xs ">
                 {errors.password?.message}
               </div>
               <button className="text-white block w-full rounded-full p-2 mt-5 bg-blue-600 font-semibold text-lg ">
@@ -111,16 +144,22 @@ const Register = () => {
           </div>
           <div className="bg-slate-200 py-5 mt-2 text-lg pl-4">
             Have an account?{" "}
-            <a href="#" className="text-blue-600 font-semibold">
+            <Link to="/login" className="text-blue-600 font-semibold">
               Log in
-            </a>
+            </Link>
           </div>
         </div>
       </div>
-      {successMessage && (
+      {message.successMessage && (
         <SuccessMessage
-          message={successMessage}
-          onClose={handleCloseSuccessMessage}
+          message={message.successMessage}
+          onClose={handleCloseMessage}
+        />
+      )}
+      {message.errorMessage && (
+        <ErrorMessage
+          message={message.errorMessage}
+          onClose={handleCloseMessage}
         />
       )}
       {loader && <Loader />}

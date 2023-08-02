@@ -68,6 +68,7 @@ exports.Register = async (req, res) => {
 // Login controllers
 exports.Login = async (req, res) => {
   try {
+    console.log("Req object:", req.headers);
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({
@@ -92,10 +93,13 @@ exports.Login = async (req, res) => {
       existingUser.token = token;
       existingUser.password = undefined;
       const options = {
-        expires: new Date(Date.now() + 2 * 24 * 60 * 60 + 1000),
+        maxAge: 3600000,
         httpOnly: true,
       };
-      return res.cookie("token", token, options).status(200).json({
+      setTimeout(() => {
+        console.log(`${req.cookies["auth-token"]}   ${"co"}`);
+      }, 5000);
+      return res.cookie("auth-token", token, options).status(200).json({
         success: true,
         token,
         existingUser,
